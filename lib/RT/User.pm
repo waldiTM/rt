@@ -97,7 +97,6 @@ sub _OverlayAccessible {
           NickName              => { public => 1 },
           Lang                  => { public => 1 },
           Gecos                 => { public => 1,  admin => 1 },
-          PGPKey                => { public => 1,  admin => 1 },
           SMIMECertificate      => { public => 1,  admin => 1 },
           PrivateKey            => {               admin => 1 },
           City                  => { public => 1 },
@@ -1956,7 +1955,6 @@ Create takes a hash of values and creates a row in the database:
   varchar(16) 'Zip'.
   varchar(50) 'Country'.
   varchar(50) 'Timezone'.
-  text 'PGPKey'.
 
 =cut
 
@@ -2386,24 +2384,6 @@ Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
 =cut
 
 
-=head2 PGPKey
-
-Returns the current value of PGPKey. 
-(In the database, PGPKey is stored as text.)
-
-
-
-=head2 SetPGPKey VALUE
-
-
-Set PGPKey to VALUE. 
-Returns (1, 'Status message') on success and (0, 'Error Message') on failure.
-(In the database, PGPKey will be stored as a text.)
-
-
-=cut
-
-
 =head2 SMIMECertificate
 
 Returns the current value of SMIMECertificate. 
@@ -2510,8 +2490,6 @@ sub _CoreAccessible {
         {read => 1, write => 1, sql_type => 12, length => 50,  is_blob => 0,  is_numeric => 0,  type => 'varchar(50)', default => ''},
         Timezone => 
         {read => 1, write => 1, sql_type => 12, length => 50,  is_blob => 0,  is_numeric => 0,  type => 'varchar(50)', default => ''},
-        PGPKey => 
-        {read => 1, write => 1, sql_type => -4, length => 0,  is_blob => 1,  is_numeric => 0,  type => 'text', default => ''},
         SMIMECertificate =>
         {read => 1, write => 1, sql_type => -4, length => 0,  is_blob => 1,  is_numeric => 0,  type => 'text', default => ''},
         Creator => 
