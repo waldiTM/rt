@@ -252,11 +252,7 @@ else {
             RealName              => $ARGS{'RealName'},
             NickName              => $ARGS{'NickName'},
             Lang                  => $ARGS{'Lang'},
-            ExternalContactInfoId => $ARGS{'ExternalContactInfoId'},
-            ContactInfoSystem     => $ARGS{'ContactInfoSystem'},
             Gecos                 => $ARGS{'Gecos'},
-            ExternalAuthId        => $ARGS{'ExternalAuthId'},
-            AuthSystem            => $ARGS{'AuthSystem'},
             HomePhone             => $ARGS{'HomePhone'},
             WorkPhone             => $ARGS{'WorkPhone'},
             MobilePhone           => $ARGS{'MobilePhone'},
@@ -302,9 +298,8 @@ $m->callback( %ARGS, CallbackName => 'BeforeUpdate', User => $UserObj, ARGSRef =
 if ($UserObj->Id && $id ne 'new') {
 
     my @fields = qw(Name Comments Signature EmailAddress FreeformContactInfo 
-                    Organization RealName NickName Lang
-                    ExternalContactInfoId ContactInfoSystem Gecos ExternalAuthId 
-                    AuthSystem HomePhone WorkPhone MobilePhone PagerPhone Address1
+                    Organization RealName NickName Lang Gecos
+                    HomePhone WorkPhone MobilePhone PagerPhone Address1
                     Address2 City State Zip Country 
                    );
 
@@ -382,11 +377,7 @@ $SetPrivileged => undef
 $Enabled => undef
 $SetEnabled => undef
 $Lang  => undef
-$ExternalContactInfoId  => undef
-$ContactInfoSystem  => undef
 $Gecos => undef
-$ExternalAuthId  => undef
-$AuthSystem  => undef
 $HomePhone => undef
 $WorkPhone  => undef
 $MobilePhone  => undef
