@@ -59,8 +59,8 @@ my %data = %$changes;
 my $user = RT::User->new($session{CurrentUser});
 my @fields = qw(RealName NickName Gecos Organization Address1 Address2 City
                 State Zip Country HomePhone WorkPhone MobilePhone PagerPhone
-                FreeformContactInfo Comments Signature Lang EmailEncoding
-                WebEncoding ExternalContactInfoId ContactInfoSystem
+                FreeformContactInfo Comments Signature Lang
+                ExternalContactInfoId ContactInfoSystem
                 ExternalAuthId AuthSystem Privileged Disabled);
 my %fields = map { lc $_ => $_ } @fields;
 
