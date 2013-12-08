@@ -756,8 +756,10 @@ sub _EncodeLOB {
         my $Body = shift;
         my $MIMEType = shift || '';
         my $Filename = shift;
+        my $TransactionId = shift;
 
         my $ContentEncoding = 'none';
+        my $note_args;
 
         #get the max attachment length from RT
         my $MaxSize = RT->Config->Get('MaxAttachmentSize');
@@ -781,13 +783,31 @@ sub _EncodeLOB {
         }
 
         #if the attachment is larger than the maximum size
-        if ( ($MaxSize) and ( $MaxSize < length($Body) ) ) {
+        my $check_size = $MaxSize && $MaxSize < length($Body);
+        if ( $TransactionId ) {
+            my $txn = RT::Transaction->new(RT->SystemUser);
+            $txn->Load($TransactionId);
+            if ( $txn->id && $txn->Type =~ /^System/ ) {
+                $check_size = 0; # no size limit for system txn
+            }
+        }
 
+        if ( $check_size ) {
+
+            my $size = length($Body);
             # if we're supposed to truncate large attachments
             if (RT->Config->Get('TruncateLongAttachments')) {
+                $RT::Logger->info("$self: Truncated an attachment of size $size");
+                my $note = ( defined $Filename ? $Filename : 'content' )
+                  . " was truncated because its size($size) exceeds max size setting($MaxSize).";
 
                 # truncate the attachment to that length.
                 $Body = substr( $Body, 0, $MaxSize );
+
+                $note_args = {
+                    NoteType => 'SystemWarning',
+                    Content => $note,
+                };
 
             }
 
@@ -795,11 +815,20 @@ sub _EncodeLOB {
             elsif (RT->Config->Get('DropLongAttachments')) {
 
                 # drop the attachment on the floor
-                $RT::Logger->info( "$self: Dropped an attachment of size "
-                                   . length($Body));
+                $RT::Logger->info("$self: Dropped an attachment of size $size");
                 $RT::Logger->info( "It started: " . substr( $Body, 0, 60 ) );
-                $Filename .= ".txt" if $Filename;
-                return ("none", "Large attachment dropped", "text/plain", $Filename );
+
+                my $note =
+                    ( defined $Filename ? $Filename : 'content' )
+                  . " was dropped because its size($size) exceeds max size setting($MaxSize).";
+
+                $note_args = {
+                    NoteType => 'SystemWarning',
+                    Content => $note,
+                };
+
+                $Filename .= ".txt" if $Filename && $Filename !~ /\.txt$/;
+                return ( "none", "Large attachment dropped", "plain/text", $Filename, $note_args );
             }
         }
 
@@ -816,7 +845,7 @@ sub _EncodeLOB {
         }
 
 
-        return ($ContentEncoding, $Body, $MIMEType, $Filename );
+        return ($ContentEncoding, $Body, $MIMEType, $Filename, $note_args );
 
 }
 

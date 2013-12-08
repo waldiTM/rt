@@ -199,10 +199,11 @@ sub Create {
     else {
 
         my ($encoding, $type);
-        ($encoding, $content, $type, $Filename) = $self->_EncodeLOB(
+        ($encoding, $content, $type, $Filename, my $note_args) = $self->_EncodeLOB(
             $Attachment->bodyhandle->as_string,
             $Attachment->mime_type,
-            $Filename
+            $Filename,
+            $args{'TransactionId'}
         );
 
         my $id = $self->SUPER::Create(
@@ -217,7 +218,18 @@ sub Create {
             MessageId       => $MessageId,
         );
 
-        unless ($id) {
+        if ($id) {
+            if ($note_args) {
+                my $object = $self->TransactionObj->Object;
+                if ( $object && $object->can('_RecordNote') ) {
+                    $object->_RecordNote(%$note_args);
+                }
+                else {
+                    $RT::Logger->error( ref($object) . " doesn't support _RecordNote" );
+                }
+            }
+        }
+        else {
             $RT::Logger->crit("Attachment insert failed: ". $RT::Handle->dbh->errstr);
         }
         return $id;
