@@ -53,11 +53,11 @@ You'll see something like:
     [DZ] dist minted in ./RT-Extension-Demo
 
 If you're stuck on a name, take a look at some of the existing RT extensions.
-You can also ask around the office or on IRC to see what people thinks
+You can also ask around IRC (#rt on irc.perl.org) to see what people think
 makes sense for what the extension will do.
 
 You'll now have a directory with the basic files for your extension.
-Included is a gitignore file which is handy if you use git for your version
+Included is a F<gitignore> file, which is handy if you use git for your version
 control like we do. If you don't use git, feel free to delete it, but we hope
 you're using some sort of version control for your work.
 
@@ -86,9 +86,12 @@ directory structure to make sure the callbacks are executed.
 
 =head2 CSS and Javascript
 
-If you have style sheets or Javascript, create a C<static> directory at the
-top level under your extension, and under that a C<css> directory and a
-C<js> directory. You can put your files in those two directories.
+Where these files live differs between RT 4.2 and above, and RT 4.0 and
+below; if you need your extension to be compatible with both, you may
+need to provide both configurations.  On RT 4.2 and above, create a
+C<static> directory at the top level under your extension, and under
+that a C<css> directory and a C<js> directory. Before RT 4.2, you should
+create C<css> and C<js> directories in C<html/NoAuth/>.
 
 To add files to RT's include paths, you can use the L<RT/AddStyleSheets> and
 L<RT/AddJavascript> methods available in the L<RT> module. You can put the
@@ -101,9 +104,8 @@ the paths correctly, you should only need to set the file names like this:
 =head2 Creating Objects in RT
 
 If you need to have users create a group, scrip, template, or some other
-object in their RT instance, you can automate this using an C<initialdata>
+object in their RT instance, you can automate this using an F<initialdata>
 file. If you need this, the file should go in the C<etc> directory.
-See also L<docs/initialdata>.
 
 =head2 Module::Install Files
 
@@ -147,7 +149,7 @@ have extra code.
 
 RT looks in the following path for callbacks:
 
-    rt_base/local/html/Callbacks/[custom_name]/[rt mason path]/[callback name]
+    local/html/Callbacks/[custom_name]/[rt mason path]/[callback name]
 
 The extension installation process will handle some of this for you by putting
 your html directory under C<local> as part of the installation process.
@@ -232,7 +234,7 @@ extension distribution. In general, you should only provide patches
 if you know they will eventually be merged into RT. Otherwise, you
 may have to provide versions of your patches for each release of RT.
 You can read more about getting changes accepted into RT in the
-L<docs/hacking> document.
+L<hacking> document.
 
 Create a C<patches> directory in your extension distribution to hold
 your patch files. Name the patch files with the latest verison of RT
@@ -253,10 +255,15 @@ the patch.
 
 # Add docs about final distribution steps (make dist, etc.)
 
-# Make sure link to initialdata.pod works
-
 # Add docs about best way to extend email handling with
 # mail plugins
 
 # Add info on creating additional web pages in html, where
 # they are installed, and how to add to the RT menu
+
+# Perhaps clarify callback paths more.  For non-plugins, it gets put
+# into local/html, but that's neither where plugins install into
+# (local/plugins/RT-Extension-Demo/html) nor the path to use inside your
+# extension.
+
+# Mention that we generally just accept patches to add callbacks
