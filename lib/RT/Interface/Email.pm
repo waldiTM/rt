@@ -1816,6 +1816,7 @@ sub _HTMLFormatter {
                 };
             };
         }
+        RT->Config->Set( HTMLFormatters => [$prog] );
         last;
     }
     return $formatter;
