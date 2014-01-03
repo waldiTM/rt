@@ -303,6 +303,38 @@ patches using the same naming convention.
 Also remember to update your install documentation to remind users to apply
 the patch.
 
+=head1 Preparing for CPAN
+
+When you have your extension ready and want to release it to the world, you
+can do so with a few simple steps.
+
+Assuming you have run C<perl Makefile.PL> and you created the F<inc/.author>
+directory as described above, a F<README> file will be created for you. You can
+now type:
+
+    make manifest
+
+and a F<MANIFEST> file will be created. It should contain all of the needed
+to install and run your extension. If you followed the steps above, you'll have
+also have a F<inc> directory which contains L<Module::Install> code. Note that
+this code should also be included with your extension when you release it as
+it's part of the install process.
+
+Next, check to see if everything is ready with:
+
+    make distcheck
+
+If anything is missing, it will be reported and you can go fix it.
+When the check is clean, run:
+
+    make dist
+
+and a new distribution will be created in the form of a tarred and gzipped
+file.
+
+Now you can upload to cpan with the F<cpan-upload> utility provided by
+L<CPAN::Uploader> or your favorite method of uploading to CPAN.
+
 =cut
 
 # TODO:
