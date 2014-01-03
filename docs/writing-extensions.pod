@@ -65,7 +65,8 @@ you're using some sort of version control for your work.
 
 There are several places to put code to provide your new features
 and if you follow the guidelines below, you'll make sure things
-get installed in the right places when you're ready to use it.
+get installed in the right places when you're ready to use it. These standards
+apply to RT 4.0 and 4.2 and any differences between the two are noted below.
 
 =head2 Module Code
 
@@ -83,6 +84,11 @@ add features. The easiest way to modify RT is to add Mason template files
 that will use these callbacks. See L</Callbacks> for more information.
 Your Mason templates should go in an C<html> directory with the appropriate
 directory structure to make sure the callbacks are executed.
+
+If you are creating completely new pages for RT, you can put thes under the
+C<html> directory also. You can create subdirectories as needed to add the
+page to existing RT paths (like Tools) or to create new directories for your
+extension.
 
 =head2 CSS and Javascript
 
@@ -105,7 +111,14 @@ the paths correctly, you should only need to set the file names like this:
 
 If you need to have users create a group, scrip, template, or some other
 object in their RT instance, you can automate this using an F<initialdata>
-file. If you need this, the file should go in the C<etc> directory.
+file. If you need this, the file should go in the C<etc> directory. This will
+allow users to easily run the F<initialdata> file when installing with:
+
+    make initdb
+
+Make sure to note this step in your installation instructions. You can read
+more about F<initialdata> files in the
+L<RT initialdata documentation|http://bestpractical.com/docs/rt/latest/initialdata.html>.
 
 =head2 Module::Install Files
 
@@ -124,14 +137,55 @@ You can find details in the module documentation.
 
 =head2 Tests
 
+=head3 Test Directory
+
 You can create tests for your new extension just as with other perl code
 you write. However, unlike typical CPAN modules where users run the tests
 as a step in the installation process, RT users installing extensions don't
 usually run tests. This is because running the tests requires your RT to
 be set up in development mode which involves installing some additional
-modules and having a dev instance. To prevent users from accidentally
-running the tests, we put them in a C<xt> directory rather than the typical
-C<t> directory.
+modules and having a test database. To prevent users from accidentally
+running the tests, which will fail without this testing setup, we put them in
+a C<xt> directory rather than the typical C<t> directory.
+
+=head3 Writing Extension Tests
+
+If you want to write and run tests yourself, you'll need a development RT
+instance set up. Since you are building an extension, you probably already have
+one. To start with testing, set the C<RTHOME> environment variable to the base
+directory of your RT instance so your extension tests run against the right
+instance. This is especially useful if you have your test RT installed in a non-standard location.
+
+Next, you need to subclass from L<RT::Test|http://bestpractical.com/docs/rt/latest/RT/Test.html>
+which gives you access to the test RT and a test database for running
+tests. For this, you'll create a F<Test.pm> file in your C<lib> tree.
+The easiest way to set up the test module to pull in F<RT::Test> is to look at
+an example extension. L<RT::Extension::RepeatTicket>, for example, has a
+testing configuration you can borrow from.
+
+You'll notice that the file included in the extension is
+F<lib/RT/Extension/RepeatTicket/Test.pm.in>. This is because there are paths
+that are set based on your RT location, so the actual F<Test.pm> file is
+written when you run F<Makefile.PL> with appropriate paths substituted
+when F<Makefile.PL> is run. L<Module::Install> provides an interface to make
+this easy with a C<substitute> feature. The substitution code is in the
+F<Makefile.PL> file and you can borrow that as well.
+
+Once you have that set up, add this to the top of your test files:
+
+    use RT::Extension::Demo::Test tests => undef;
+
+and you'll be able to run tests in the context of a fully functioning RT
+instance. The L<RT::Test|http://bestpractical.com/docs/rt/latest/RT/Test.html>
+documentation describes some of the helper methods available and you can
+look at other extensions and the RT source code for examples of how to
+do things like create tickets, queues, and users, how to set rights, and
+how to modify tickets to simulate various RT tasks.
+
+If you have a command-line component in your extension, the easiest way
+to test it is to set up a C<run> method using the Modulino approach.
+You can find an example of this approach in L<RT::Extension::RepeatTicket>
+in the F<bin> directory.
 
 =head2 Patches
 
@@ -147,21 +201,23 @@ have extra code.
 
 =head2 Directory Structure
 
-RT looks in the following path for callbacks:
+RT looks in the F<local/plugins> directory under the RT base directory for
+extensions registered with the C<@Plugins> configuration. RT then uses the
+following structure when looking for callbacks:
 
-    local/html/Callbacks/[custom_name]/[rt mason path]/[callback name]
+    local/plugins/[ext name]/html/Callbacks/[custom name]/[rt mason path]/[callback name]
 
 The extension installation process will handle some of this for you by putting
-your html directory under C<local> as part of the installation process.
-You need to make sure the path under C<html> is correct since that is installed
-as-is.
+your html directory under F<local/plugins/[ext name]> as part of the
+installation process. You need to make sure the path under C<html> is correct
+since that is installed as-is.
 
 The C<Callbacks> directory is required. The next directory can be named
 anything and is provided to allow RT owners to keep local files organized
 in a way that makes sense to them. In the case of
 an extension, you should name the directory the same as your extension.
 So if your extension is C<RT::Extension::Demo>, you should create a
-C<RT-Extension-Demo> directory under C<Callbacks>.
+F<RT-Extension-Demo> directory under F<Callbacks>.
 
 The rest of the path is determined by the RT Mason code and the callback you
 want to use. You can find callbacks by looking for calls to the C<callback>
@@ -172,25 +228,25 @@ RT directory:
 
 As an example, assume you wanted to modify the ticket update page to put
 something after the Time Worked field. You run the above and see there is
-a callback in C<share/html/Ticket/Update.html> that looks like this:
+a callback in F<share/html/Ticket/Update.html> that looks like this:
 
     $m->callback( %ARGS, CallbackName => 'AfterWorked', Ticket => $TicketObj );
 
-You look at the Update.html file and see that the callback is located
+You look at the F<Update.html> file and see that the callback is located
 right after the Time Worked field. To add some code that RT will
 run at that point, you would create the directory:
 
     html/Callbacks/RT-Extension-Demo/Ticket/Update.html/
 
-Note that Update.html is a file in the RT source, but it becomes a directory
+Note that F<Update.html> is a file in the RT source, but it becomes a directory
 in your extension code. You then create a file with the name of the
-callback, in this case C<AfterWorked>, and that's where you put your code.
+callback, in this case F<AfterWorked>, and that's where you put your code.
 So the full path and file would be:
 
     html/Callbacks/RT-Extension-Demo/Ticket/Update.html/AfterWorked
 
 If you see a callback that doesn't have a C<CallbackName> parameter, name
-your file C<Default> and it will get invoked since that is the default
+your file F<Default> and it will get invoked since that is the default
 callback name when one isn't provided.
 
 =head2 Callback Parameters
@@ -234,7 +290,7 @@ extension distribution. In general, you should only provide patches
 if you know they will eventually be merged into RT. Otherwise, you
 may have to provide versions of your patches for each release of RT.
 You can read more about getting changes accepted into RT in the
-L<hacking> document.
+L<hacking> document. We generally accept patches that add new callbacks.
 
 Create a C<patches> directory in your extension distribution to hold
 your patch files. Name the patch files with the latest verison of RT
@@ -251,8 +307,6 @@ the patch.
 
 # TODO:
 
-# Add docs about how to set up testing
-
 # Add docs about final distribution steps (make dist, etc.)
 
 # Add docs about best way to extend email handling with
@@ -261,9 +315,3 @@ the patch.
 # Add info on creating additional web pages in html, where
 # they are installed, and how to add to the RT menu
 
-# Perhaps clarify callback paths more.  For non-plugins, it gets put
-# into local/html, but that's neither where plugins install into
-# (local/plugins/RT-Extension-Demo/html) nor the path to use inside your
-# extension.
-
-# Mention that we generally just accept patches to add callbacks
