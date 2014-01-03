@@ -36,7 +36,7 @@ not putting your code on CPAN.
 If this is your first time using L<Dist::Zilla>, you can set up your
 CPAN detals by running:
 
-    # dzil setup
+    dzil setup
 
 You can read about L<Dist::Zilla> and the C<dzil> command at L<http://dzil.org>.
 
@@ -44,7 +44,7 @@ Change to the directory that will be the parent directory for your new
 extension and run the following, replacing Demo with a descriptive name
 for your new extension:
 
-    # dzil new -P RTx RT-Extension-Demo
+    dzil new -P RTx RT-Extension-Demo
 
 You'll see something like:
 
@@ -116,16 +116,15 @@ allow users to easily run the F<initialdata> file when installing with:
 
     make initdb
 
-Make sure to note this step in your installation instructions. You can read
-more about F<initialdata> files in the
-L<RT initialdata documentation|http://bestpractical.com/docs/rt/latest/initialdata.html>.
+Make sure to note this step in your installation instructions. The
+L<Initialdata> documentation has details on the format.
 
 =head2 Module::Install Files
 
 As mentioned above, the RT extension tools are set up to use L<Module::Install>
 to manage the distribution. When you run
 
-    # perl Makefile.PL
+    perl Makefile.PL
 
 for the first time, L<Module::Install> will create an C<inc> directory for all
 of the files it needs. Since you are the author, a C<.author> directory
@@ -156,7 +155,7 @@ one. To start with testing, set the C<RTHOME> environment variable to the base
 directory of your RT instance so your extension tests run against the right
 instance. This is especially useful if you have your test RT installed in a non-standard location.
 
-Next, you need to subclass from L<RT::Test|http://bestpractical.com/docs/rt/latest/RT/Test.html>
+Next, you need to subclass from L<RT::Test>
 which gives you access to the test RT and a test database for running
 tests. For this, you'll create a F<Test.pm> file in your C<lib> tree.
 The easiest way to set up the test module to pull in F<RT::Test> is to look at
@@ -176,7 +175,7 @@ Once you have that set up, add this to the top of your test files:
     use RT::Extension::Demo::Test tests => undef;
 
 and you'll be able to run tests in the context of a fully functioning RT
-instance. The L<RT::Test|http://bestpractical.com/docs/rt/latest/RT/Test.html>
+instance. The L<RT::Test>
 documentation describes some of the helper methods available and you can
 look at other extensions and the RT source code for examples of how to
 do things like create tickets, queues, and users, how to set rights, and
@@ -274,6 +273,47 @@ to give you idea what you can do in your callback code. You can also look
 at other extensions for examples of how people use callbacks to modify
 and extend RT.
 
+=head1 Adding and Modifying Menus
+
+You can modify all of RT's menus using callbacks as described in L</Callbacks>.
+The file in RT that controls menus is:
+
+    share/html/Elements/Tabs
+
+and you'll find a Privileged and SelfService callback which gives you access
+to those two sets of menus. In those callbacks, you can add to or change
+the main menu, the page menu, or the page widgets.
+
+You can look at the F<Tabs> file itself for examples of adding menu items.
+The menu object is a L<RT::Interface::Web::Menu> and you can find details on
+the available parameters in the documentation.
+
+Here are some simple examples of what you might do in a callback:
+
+    <%init>
+    # Add a brand new root menu item
+    my $bps = Menu()->child(
+        'bps', # any unique identifier
+        title => 'Corporate',
+        path  => 'http://bestpractical.com'
+    );
+
+    #Add a submenu item to this root menu item
+    $bps->child(
+        'wiki',
+        title => 'Wiki',
+        path  => 'http://wiki.bestpractical.com',
+    );
+
+    #Retrieve the 'actions' page menu item
+    if (my $actions = PageMenu->child('actions')) {
+        $actions->child(
+            'newitem',
+            title => loc('New Action'), path => '/new/thing/here',
+        )
+    }
+    </%init>
+
 =head1 Changes to RT
 
 When writing an extension, the goal is to provide all of the new functionality
@@ -336,14 +376,4 @@ Now you can upload to cpan with the F<cpan-upload> utility provided by
 L<CPAN::Uploader> or your favorite method of uploading to CPAN.
 
 =cut
-
-# TODO:
-
-# Add docs about final distribution steps (make dist, etc.)
-
-# Add docs about best way to extend email handling with
-# mail plugins
-
-# Add info on creating additional web pages in html, where
-# they are installed, and how to add to the RT menu
 
