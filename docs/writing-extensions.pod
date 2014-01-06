@@ -34,7 +34,7 @@ not putting your code on CPAN.
 =back
 
 If this is your first time using L<Dist::Zilla>, you can set up your
-CPAN detals by running:
+CPAN details by running:
 
     dzil setup
 
@@ -85,7 +85,7 @@ that will use these callbacks. See L</Callbacks> for more information.
 Your Mason templates should go in an C<html> directory with the appropriate
 directory structure to make sure the callbacks are executed.
 
-If you are creating completely new pages for RT, you can put thes under the
+If you are creating completely new pages for RT, you can put these under the
 C<html> directory also. You can create subdirectories as needed to add the
 page to existing RT paths (like Tools) or to create new directories for your
 extension.
@@ -333,7 +333,7 @@ You can read more about getting changes accepted into RT in the
 L<hacking> document. We generally accept patches that add new callbacks.
 
 Create a C<patches> directory in your extension distribution to hold
-your patch files. Name the patch files with the latest verison of RT
+your patch files. Name the patch files with the latest version of RT
 that needs the patch. For example, if the patch is needed for RT 4.0.7,
 name your patch C<4.0.7-some-patch.diff>. That tells users that if they
 are using RT 4.0.7 or earlier, they need to apply the patch. If your
