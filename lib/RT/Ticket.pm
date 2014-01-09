@@ -1065,13 +1065,19 @@ sub SetQueue {
     my $self  = shift;
     my $value = shift;
 
+    my %args = (
+        RecordTransaction => 1,
+        @_
+    );
+
     unless ( $self->CurrentUserHasRight('ModifyTicket') ) {
         return ( 0, $self->loc("Permission Denied") );
     }
 
     my ($ok, $msg, $status) = $self->_SetLifecycleColumn(
-        Value           => $value,
-        RequireRight    => "CreateTicket"
+        Value             => $value,
+        RequireRight      => "CreateTicket",
+        RecordTransaction => $args{RecordTransaction},
     );
 
     if ($ok) {

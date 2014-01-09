@@ -242,7 +242,11 @@ L<RT::Ticket/SetQueue>.
 
 sub _SetLifecycleColumn {
     my $self = shift;
-    my %args = @_;
+
+    my %args = (
+        RecordTransaction => 1,
+        @_
+    );
 
     my $column     = $self->LifecycleColumn;
     my $column_obj = "${column}Obj";
@@ -282,7 +286,11 @@ sub _SetLifecycleColumn {
             unless $new_status;
     }
 
-    my ($ok, $msg) = $self->_Set( Field => $column, Value => $new->id );
+    my ($ok, $msg) = $self->_Set(
+        Field             => $column,
+        Value             => $new->id,
+        RecordTransaction => $args{RecordTransaction},
+    );
     if ($ok) {
         if ( $new_status ) {
             my $as_system = blessed($self)->new( RT->SystemUser );
